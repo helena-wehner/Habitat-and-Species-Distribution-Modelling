@@ -107,11 +107,26 @@ head(juvenile_hand)
 rudini <- juvenile_hand[[1]]
 head(rudini)
 
+writeOGR(obj = rudini, dsn = "Waldrappteam", layer = "Rudini", driver = "ESRI Shapefile")
+rudini <- readOGR("Waldrappteam/Rudini.shp")
+head(rudini)
+plot(rudini)
+
+rudini.df.2 <- as(rudini, "data.frame")
+
 rudini.df <- data.frame(x=rudini$lon, y=rudini$lat, t=rudini$timestamp)
 head(rudini.df)
 
 # is the data ordered?
 rudini.df <- rudini.df[order(rudini.df$t),]
+
+# move object Rudini
+rudini.m <- move(x=rudini.df.2$lon, y=rudini.df.2$lat, time=as.POSIXct(rudini.df.2$timestamp, format="%Y-%m-%d %H:%M:%S", tz="UTC"), data=rudini.df.2, proj=CRS("+proj=longlat +ellps=WGS84"),animal="Rudini", sensor="GPS")
+
+# überprüfen, wie of ein fix in den Daten kommt (timely res. of the data)
+tl <- timeLag(x = rudini.m, units="mins")
+summary(tl)
+hist(tl)
 
 # movement data in amt package format
 rud.tr <- amt::track(tbl = rudini.df, x = rudini.df$x, y=rudini.df$y, t=as.POSIXct(rudini.df$t, format="%Y-%m-%d %H:%M:%S"))
